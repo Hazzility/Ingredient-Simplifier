@@ -43,12 +43,12 @@ export default class CameraScreen extends React.Component<CameraScreenProps> {
           borderColor: 'green',
           borderWidth: 2
         }} />
-      );
+      )
     });
   }
 
   render() {
-    const { hasCameraPermission } = this.state;
+    const hasCameraPermission = this.state.hasCameraPermission;
     if(hasCameraPermission === null) {
       return (<Text>Need permission!</Text>);
     } else if(hasCameraPermission === false) {
@@ -62,14 +62,18 @@ export default class CameraScreen extends React.Component<CameraScreenProps> {
           onTextRecognized={(textBlocks) => {
             this.setState({ textBlocks: textBlocks });
           }}
-          captureAudio={false}
         >
           <Icon 
             name='camera'
             type='font-awesome'
             color='green'
             onPress={() => {
-              const words = this.state.textBlocks.map(({value}) => value);
+              let words
+              if(this.state.textBlocks == []) {
+                words = []
+              } else {
+                words = this.state.textBlocks.map(({value}) => value);
+              }
               this.props.navigation.navigate('input', { words: words });
             }}
           />

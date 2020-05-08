@@ -1,10 +1,12 @@
 import React, { FC } from 'react';
 import { Text, View, StyleSheet, TextStyle } from 'react-native';
 
+interface StringToString { [key: string]: string }
+
 // the given sample data
-const myData = {
-  'High Fructose Corn Syrup': 'sugar',
-  'Maltodextrin': 'sugar',
+const lookupTable: StringToString = {
+  'high fructose corn syrup': 'sugar',
+  'maltodextrin': 'sugar',
   'dextrose': 'sugar',
 };
 
@@ -32,23 +34,40 @@ const TableItem: FC<TableItemProps> = ({ val, textStyle }) => (
 
 export default function ResultsScreen({ navigation }) {
   
-  const ingredients = navigation.getParam('ingredients', []);
+  const myData: StringToString = {};
+  navigation.getParam('ingredients', []).forEach((ingr) => {
+    if(lookupTable[ingr]) {
+      myData[ingr] = lookupTable[ingr];
+    } else {
+      myData[ingr] = '???';
+    }
+  });
 
   // this defines an array of containers, each container representing a row
-  const myRows = ingredients.map((ingredient, idx) => {
-    const value = myData[ingredient];
-    return(
+  const myRows = Object.entries(myData).map(([key, value], idx) => (
     <View style={styles.row} key={idx}>
-      <TableItem val={ingredient} textStyle={styles.rowItem} />
+      <TableItem val={key} textStyle={styles.rowItem} />
       <TableItem val={value} textStyle={styles.rowItem} />
     </View>
-    );
-  });
+  ));
+
+  if(!navigation.getParam('ingredients', false)) {
+    return (
+    <View style={{
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'column',
+      padding: 50
+    }}>
+      <Text style={styles.errorText}>You haven't entered any ingredients yet!</Text>
+      <Text style={styles.errorText}>Go to the Camera tab or the Input tab to start analyzing ingredients.</Text>
+    </View>);
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.table}>
-        
         {/* the first row represents the header row */}
         <View style={styles.row}>
           <TableItem val="Original" textStyle={styles.tableHeader} />
@@ -59,6 +78,7 @@ export default function ResultsScreen({ navigation }) {
         </View>
 
         { myRows /* all of our data is included here */ }
+
       </View>
     </View>
   );
@@ -79,4 +99,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     alignSelf: 'center',
   },
-})
+  errorText: {
+    textAlign: 'center',
+    fontSize: 18,
+    marginVertical: 10
+  }
+});
